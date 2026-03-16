@@ -4,7 +4,11 @@ import type { OfficialModelModality } from '@/lib/providers/official/model-regis
 const BAILIAN_CATALOG: Readonly<Record<OfficialModelModality, readonly string[]>> = {
   llm: [
     'qwen3.5-plus',
+    'qwen3.5-plus-2026-02-15',
     'qwen3.5-flash',
+    'MiniMax-M2.5',
+    'kimi-k2.5',
+    'qwen3.5-397b-a17b',
   ],
   image: [],
   video: [
