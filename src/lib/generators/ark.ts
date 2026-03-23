@@ -105,6 +105,16 @@ const ARK_SEEDANCE_MODEL_SPECS: Record<string, ArkSeedanceModelSpec> = {
         supportsFrames: false,
         resolutionOptions: ['480p', '720p', '1080p'],
     },
+    // Seedance 1.5 (ep-20260316120923-555k6)
+    'ep-20260316120923-555k6': {
+        durationMin: 4,
+        durationMax: 12,
+        supportsFirstLastFrame: true,
+        supportsGenerateAudio: true,
+        supportsDraft: false,
+        supportsFrames: false,
+        resolutionOptions: ['480p', '720p', '1080p'],
+    },
 }
 
 const ARK_VIDEO_ALLOWED_RATIOS = new Set(['16:9', '4:3', '1:1', '3:4', '9:16', '21:9', 'adaptive'])

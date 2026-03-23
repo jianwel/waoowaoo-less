@@ -33,6 +33,26 @@ function getErrorMessage(error: unknown): string {
     return '未知错误'
 }
 
+/**
+ * 将 resolution 选项转换为 Google Gemini API 接受的 imageSize 格式
+ * 0.5K -> 1024x1024
+ * 1K -> 1024x1024
+ * 2K -> 2048x2048
+ * 4K -> 4096x4096
+ */
+function normalizeResolutionToImageSize(resolution?: string): string | undefined {
+    if (!resolution) return undefined
+
+    const resolutionMap: Record<string, string> = {
+        '0.5K': '1024x1024',
+        '1K': '1024x1024',
+        '2K': '2048x2048',
+        '4K': '4096x4096',
+    }
+
+    return resolutionMap[resolution] || resolution
+}
+
 export class GoogleGeminiImageGenerator extends BaseImageGenerator {
     private modelId: string
 
@@ -137,7 +157,7 @@ export class GoogleGeminiImageGenerator extends BaseImageGenerator {
                     ? {
                         imageConfig: {
                             ...(aspectRatio ? { aspectRatio } : {}),
-                            ...(resolution ? { imageSize: resolution } : {}),
+                            ...(resolution ? { imageSize: normalizeResolutionToImageSize(resolution) } : {}),
                         },
                     }
                     : {})

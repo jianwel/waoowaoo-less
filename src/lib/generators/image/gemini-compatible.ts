@@ -14,6 +14,26 @@ type GeminiCompatibleOptions = {
   modelKey?: string
 }
 
+/**
+ * 将 resolution 选项转换为 Google Gemini API 接受的 imageSize 格式
+ * 0.5K -> 1024x1024
+ * 1K -> 1024x1024
+ * 2K -> 2048x2048
+ * 4K -> 4096x4096
+ */
+function normalizeResolutionToImageSize(resolution?: string): string | undefined {
+  if (!resolution) return undefined
+
+  const resolutionMap: Record<string, string> = {
+    '0.5K': '1024x1024',
+    '1K': '1024x1024',
+    '2K': '2048x2048',
+    '4K': '4096x4096',
+  }
+
+  return resolutionMap[resolution] || resolution
+}
+
 function toAbsoluteUrlIfNeeded(value: string): string {
   if (!value.startsWith('/')) return value
   const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000'
@@ -99,26 +119,16 @@ export class GeminiCompatibleImageGenerator extends BaseImageGenerator {
     }
     parts.push({ text: prompt })
 
+    // 尝试简化请求参数，以兼容更多第三方服务商
+    // responseModalities 需要是数组类型
+    const requestConfig: Record<string, unknown> = {
+      responseModalities: ['IMAGE'],
+    }
+
     const response = await ai.models.generateContent({
       model: this.modelId || normalizedOptions.modelId || 'gemini-2.5-flash-image-preview',
       contents: [{ parts }],
-      config: {
-        responseModalities: ['TEXT', 'IMAGE'],
-        safetySettings: [
-          { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-          { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.BLOCK_NONE },
-          { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.BLOCK_NONE },
-          { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.BLOCK_NONE },
-        ],
-        ...(normalizedOptions.aspectRatio || normalizedOptions.resolution
-          ? {
-            imageConfig: {
-              ...(normalizedOptions.aspectRatio ? { aspectRatio: normalizedOptions.aspectRatio } : {}),
-              ...(normalizedOptions.resolution ? { imageSize: normalizedOptions.resolution } : {}),
-            },
-          }
-          : {}),
-      },
+      config: requestConfig,
     })
 
     const candidate = response.candidates?.[0]
